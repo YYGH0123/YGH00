@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Goal Scoring Game</title>
+  <style>
+    canvas {
+      display: block;
+      margin: auto;
+      border: 1px solid #000;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let playerImage = new Image();
+    playerImage.src = '플레이어.jpg'; // Replace with the actual path to the player image
+
+    let goalkeeperImage = new Image();
+    goalkeeperImage.src = '골키퍼.jpg'; // Replace with the actual path to the goalkeeper image
+
+    let playerX = 50;
+    let playerY = canvas.height / 2;
+    let goalWidth = 30;
+    let goalHeight = 120;
+    let goalX = canvas.width - goalWidth;
+    let goalY = canvas.height / 2 - goalHeight / 2;
+    let goalkeeperY = canvas.height / 2;
+    let ballRadius = 10;
+    let ballX = canvas.width / 2;
+    let ballY = canvas.height / 2;
+    let ballSpeedX = 0; // Horizontal speed of the ball
+    let ballSpeedY = 0; // Vertical speed of the ball
+    let hasBall = true; // Flag to check if the player has the ball
+    let shotPower = 0; // Variable to store shot power
+    let score = 0;
+
+    const keyState = {};
+
+    document.addEventListener('keydown', (event) => {
+      keyState[event.key] = true;
+    });
+
+    document.addEventListener('keyup', (event) => {
+      keyState[event.key] = false;
+    });
+
+    function handlePlayerMovement() {
+      if (keyState['w'] || keyState['W']) {
+        playerY -= 5;
+      }
+      if (keyState['s'] || keyState['S']) {
+        playerY += 5;
+      }
+      if (keyState['a'] || keyState['A']) {
+        playerX -= 5;
+      }
+      if (keyState['d'] || keyState['D']) {
+        playerX += 5;
+      }
+      if (keyState['ArrowUp'] && hasBall) {
+        shotPower = 0;
+        const shotInterval = setInterval(() => {
+          shotPower += 1;
+        }, 100);
+        setTimeout(() => {
+          clearInterval(shotInterval);
+          if (hasBall) {
+            ballSpeedX = 0;
+            ballSpeedY = -shotPower * 0.2;
+            hasBall = false;
+          }
+        }, 2000);
+      }
+      if (keyState['ArrowDown'] && hasBall) {
+        shotPower = 0;
+        const shotInterval = setInterval(() => {
+          shotPower += 1;
+        }, 100);
+        setTimeout(() => {
+          clearInterval(shotInterval);
+          if (hasBall) {
+            ballSpeedX = 0;
+            ballSpeedY = shotPower * 0.2;
+            hasBall = false;
+          }
+        }, 2000);
+      }
+      if (keyState['ArrowLeft'] && hasBall) {
+        shotPower = 0;
+        const shotInterval = setInterval(() => {
+          shotPower += 1;
+        }, 100);
+        setTimeout(() => {
+          clearInterval(shotInterval);
+          if (hasBall) {
+            ballSpeedX = -shotPower * 0.2;
+            ballSpeedY = 0;
+            hasBall = false;
+          }
+        }, 2000);
+      }
+      if (keyState['ArrowRight'] && hasBall) {
+        shotPower = 0;
+        const shotInterval = setInterval(() => {
+          shotPower += 1;
+        }, 100);
+        setTimeout(() => {
+          clearInterval(shotInterval);
+          if (hasBall) {
+            ballSpeedX = shotPower * 0.2;
+            ballSpeedY = 0;
+            hasBall = false;
+          }
+        }, 2000);
+      }
+    }
+
+    function resetBall() {
+      ballX = playerX + 20;
+      ballY = playerY + 10;
+      ballSpeedX = 0;
+      ballSpeedY = 0;
+      hasBall = true;
+    }
+
+    function draw() {
+      // Clear the canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw the goal
+      ctx.fillStyle = 'black';
+      ctx.fillRect(goalX, goalY, goalWidth, goalHeight);
+
+      // Draw the player
+      ctx.drawImage(playerImage, playerX, playerY, 40, 40);
+
+      // Draw the goalkeeper
+      ctx.drawImage(goalkeeperImage, canvas.width - 70, goalkeeperY - 20, 40, 40);
+
+      // Draw the ball
+      ctx.fillStyle = 'red';
+      ctx.beginPath();
+      ctx.arc(ballX, ballY, ballRadius, 0, 2 * Math.PI);
+      ctx.fill();
+
+      // Display the score
+      ctx.fillStyle = 'black';
+      ctx.font = '20px Arial';
+      ctx.fillText('Score: ' + score, 10, 30);
+
+      // Move the goalkeeper randomly
+      goalkeeperY += Math.random() * 6 - 3;
+
+      // Move the ball
+      ballX += ballSpeedX;
+      ballY += ballSpeedY;
+
+      // Check if the ball goes out of bounds
+      if (ballX < 0 || ballX > canvas.width || ballY < 0 || ballY > canvas.height) {
+        resetBall();
+      }
+
+      // Check if the ball collides with the player
+      if (ballX > playerX && ballX < playerX + 40 && ballY > playerY && ballY < playerY + 40 && !hasBall) {
+        // Player gains possession of the ball
+        resetBall();
+      }
+
+      // Check if the ball goes into the goal
+      if (ballX > goalX && ballX < goalX + goalWidth && ballY > goalY && ballY < goalY + goalHeight) {
+        score++;
+        resetBall();
+      }
+
+      // Handle player movement
+      handlePlayerMovement();
+
+      // Repeat the drawing
+      requestAnimationFrame(draw);
+    }
+
+    // Start the game loop
+    draw();
+  </script>
+</body>
+</html>
